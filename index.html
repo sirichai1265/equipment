@@ -257,6 +257,21 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </div>
     </a>
+    <a class="card gatemove" href="https://claude.ai/artifact/NfQA4k7CJ9jL7V6113WQxN" target="_blank" rel="noopener">
+      <div class="tag">Gate Move · Empty In / Out</div>
+      <div class="body">
+        <h2>H-A Gate Move</h2>
+        <div class="stats">
+          <div class="stat"><div class="n">128</div><div class="l">Gate In (2 Oct)</div></div>
+          <div class="stat"><div class="n">147</div><div class="l">Gate Out (2 Oct)</div></div>
+          <div class="stat"><div class="n neg">−19</div><div class="l">Net In − Out (2 Oct)</div></div>
+          <div class="stat"><div class="n">5</div><div class="l">Yards Tracked</div></div>
+        </div>
+      </div>
+      <div class="go">Open Dashboard
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </a>
   </div>
 
   <footer>
@@ -266,7 +281,7 @@
 
 <script>
   // Last updated = เวลาอัปเดตล่าสุดของทุก Dashboard (เลือกอันที่ใหม่ที่สุด แสดงเฉพาะวันที่ YYYY-MM-DD)
-  const stamps = [];
+  const stamps = ["2026-10-03 11:04"]; // H-A Gate Move (claude.ai ดึงอัตโนมัติไม่ได้ — แก้วันที่นี้เมื่ออัปเดตการ์ด)
   const showStamp = () => {
     if (stamps.length) document.getElementById("stamp-date").textContent = stamps.sort().at(-1).slice(0, 10);
   };
