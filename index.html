@@ -265,10 +265,10 @@
 </div>
 
 <script>
-  // Last updated = เวลาอัปเดตล่าสุดของทุก Dashboard (เลือกอันที่ใหม่ที่สุด รูปแบบ "YYYY-MM-DD HH:MM")
+  // Last updated = เวลาอัปเดตล่าสุดของทุก Dashboard (เลือกอันที่ใหม่ที่สุด แสดงเฉพาะวันที่ YYYY-MM-DD)
   const stamps = [];
   const showStamp = () => {
-    if (stamps.length) document.getElementById("stamp-date").textContent = stamps.sort().at(-1);
+    if (stamps.length) document.getElementById("stamp-date").textContent = stamps.sort().at(-1).slice(0, 10);
   };
 
   // ดึงตัวเลขล่าสุดจาก EQ Staying (ถ้าโหลดไม่ได้ จะแสดงตัวเลขที่ฝังไว้ด้านบน)
