@@ -265,8 +265,14 @@
 </div>
 
 <script>
+  // Last updated = เวลาอัปเดตล่าสุดของทุก Dashboard (เลือกอันที่ใหม่ที่สุด รูปแบบ "YYYY-MM-DD HH:MM")
+  const stamps = [];
+  const showStamp = () => {
+    if (stamps.length) document.getElementById("stamp-date").textContent = stamps.sort().at(-1);
+  };
+
   // ดึงตัวเลขล่าสุดจาก EQ Staying (ถ้าโหลดไม่ได้ จะแสดงตัวเลขที่ฝังไว้ด้านบน)
-  fetch("https://sirichai1265.github.io/eq-staying/").then(r => r.text()).then(html => {
+  const eq = fetch("https://sirichai1265.github.io/eq-staying/").then(r => r.text()).then(html => {
     const data = JSON.parse(html.match(/const DATA = (\[.*?\]);/s)[1]);
     const v = {
       total: data.length,
@@ -275,17 +281,23 @@
       long: data.filter(r => r.d >= 100).length,
     };
     document.querySelectorAll("[data-k]").forEach(el => { el.textContent = v[el.dataset.k].toLocaleString("en-US"); });
-    const m = html.match(/"lastEq":\s*"(\d{4}-\d{2}-\d{2})"/);
-    if (m) document.getElementById("stamp-date").textContent = m[1];
+    const m = html.match(/"generated":\s*"(\d{4}-\d{2}-\d{2} \d{2}:\d{2})"/);
+    if (m) stamps.push(m[1]);
   }).catch(() => {});
+
   // ดึงยอด Storage ล่าสุดจาก HAL Storage Dashboard (ช่อง KPI: BKK, UTCT, LCH, เก็บลูกค้า, รวม HAL จ่าย)
-  fetch("https://sirichai1265.github.io/hal-storage-calculator/DASHBOARD.html").then(r => r.text()).then(html => {
-    const kpis = new DOMParser().parseFromString(html, "text/html").querySelectorAll(".kpi strong");
+  const st = fetch("https://sirichai1265.github.io/hal-storage-calculator/DASHBOARD.html").then(r => r.text()).then(html => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const kpis = doc.querySelectorAll(".kpi strong");
     document.querySelectorAll("[data-s]").forEach(el => {
       const k = kpis[+el.dataset.s];
       if (!k) return;
       el.textContent = k.textContent.trim();
       el.classList.toggle("neg", el.dataset.s === "4" && parseFloat(k.textContent.replace(/,/g, "")) > 0);
     });
+    const m = (doc.querySelector("footer")?.textContent || "").match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})/);
+    if (m) stamps.push(`${m[3]}-${m[2]}-${m[1]} ${m[4]}`);
   }).catch(() => {});
+
+  Promise.all([eq, st]).then(showStamp);
 </script>
