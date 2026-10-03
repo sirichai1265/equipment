@@ -257,15 +257,15 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </div>
     </a>
-    <a class="card gatemove" href="https://claude.ai/artifact/NfQA4k7CJ9jL7V6113WQxN" target="_blank" rel="noopener">
+    <a class="card gatemove" href="https://sirichai1265.github.io/ha-gate-move/dashboard.html" target="_blank" rel="noopener">
       <div class="tag">Gate Move · Empty In / Out</div>
       <div class="body">
         <h2>H-A Gate Move</h2>
         <div class="stats">
-          <div class="stat"><div class="n">128</div><div class="l">Gate In (2 Oct)</div></div>
-          <div class="stat"><div class="n">147</div><div class="l">Gate Out (2 Oct)</div></div>
-          <div class="stat"><div class="n neg">−19</div><div class="l">Net In − Out (2 Oct)</div></div>
-          <div class="stat"><div class="n">5</div><div class="l">Yards Tracked</div></div>
+          <div class="stat"><div class="n" data-g="in">128</div><div class="l">Gate In (<span class="gday">2 Oct</span>)</div></div>
+          <div class="stat"><div class="n" data-g="out">147</div><div class="l">Gate Out (<span class="gday">2 Oct</span>)</div></div>
+          <div class="stat"><div class="n neg" data-g="net">−19</div><div class="l">Net In − Out (<span class="gday">2 Oct</span>)</div></div>
+          <div class="stat"><div class="n" data-g="yards">5</div><div class="l">Yards Tracked</div></div>
         </div>
       </div>
       <div class="go">Open Dashboard
@@ -281,7 +281,7 @@
 
 <script>
   // Last updated = เวลาอัปเดตล่าสุดของทุก Dashboard (เลือกอันที่ใหม่ที่สุด แสดงเฉพาะวันที่ YYYY-MM-DD)
-  const stamps = ["2026-10-03 11:04"]; // H-A Gate Move (claude.ai ดึงอัตโนมัติไม่ได้ — แก้วันที่นี้เมื่ออัปเดตการ์ด)
+  const stamps = [];
   const showStamp = () => {
     if (stamps.length) document.getElementById("stamp-date").textContent = stamps.sort().at(-1).slice(0, 10);
   };
@@ -314,5 +314,24 @@
     if (m) stamps.push(`${m[3]}-${m[2]}-${m[1]} ${m[4]}`);
   }).catch(() => {});
 
-  Promise.all([eq, st]).then(showStamp);
+  // ดึงยอด GATE IN / GATE OUT ของวันล่าสุดจาก H-A Gate Move
+  const gm = fetch("https://sirichai1265.github.io/ha-gate-move/dashboard.html").then(r => r.text()).then(html => {
+    const d = JSON.parse(html.match(/const DATA = \/\*__DATA__\*\/(\{.*?\});\s*\n/s)[1]);
+    const last = d.moves.reduce((m, x) => x[0] > m ? x[0] : m, "");
+    const day = d.moves.filter(x => x[0] === last);
+    const gin = day.filter(x => x[3] === "GATE IN").length, gout = day.filter(x => x[3] === "GATE OUT").length;
+    const net = gin - gout;
+    const v = { in: gin, out: gout, net, yards: d.yards.length };
+    document.querySelectorAll("[data-g]").forEach(el => {
+      const n = v[el.dataset.g];
+      el.textContent = (n < 0 ? "−" + Math.abs(n) : n).toLocaleString("en-US");
+    });
+    document.querySelector('[data-g="net"]').classList.toggle("neg", net < 0);
+    const label = new Date(last + "T00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    document.querySelectorAll(".gday").forEach(el => { el.textContent = label; });
+    const m = d.generated.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})/);
+    if (m) stamps.push(`${m[3]}-${m[2]}-${m[1]} ${m[4]}`);
+  }).catch(() => {});
+
+  Promise.all([eq, st, gm]).then(showStamp);
 </script>
