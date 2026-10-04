@@ -280,6 +280,14 @@
 </div>
 
 <script>
+  // ดึงข้อมูลล่าสุดจากทุก Dashboard: ตอนเปิดหน้า, ทุก 5 นาที และทุกครั้งที่กลับมาที่แท็บนี้
+  // (no-store = ไม่ใช้ข้อมูลเก่าที่ browser เก็บไว้)
+  const get = url => fetch(url, { cache: "no-store" }).then(r => r.text());
+  let busy = false;
+  function refresh() {
+  if (busy) return;
+  busy = true;
+
   // Last updated = เวลาอัปเดตล่าสุดของทุก Dashboard (เลือกอันที่ใหม่ที่สุด แสดงเฉพาะวันที่ YYYY-MM-DD)
   const stamps = [];
   const showStamp = () => {
@@ -287,7 +295,7 @@
   };
 
   // ดึงตัวเลขล่าสุดจาก EQ Staying (ถ้าโหลดไม่ได้ จะแสดงตัวเลขที่ฝังไว้ด้านบน)
-  const eq = fetch("https://sirichai1265.github.io/eq-staying/").then(r => r.text()).then(html => {
+  const eq = get("https://sirichai1265.github.io/eq-staying/").then(html => {
     const data = JSON.parse(html.match(/const DATA = (\[.*?\]);/s)[1]);
     const v = {
       total: data.length,
@@ -301,7 +309,7 @@
   }).catch(() => {});
 
   // ดึงยอด Storage ล่าสุดจาก HAL Storage Dashboard (ช่อง KPI: BKK, UTCT, LCH, เก็บลูกค้า, รวม HAL จ่าย)
-  const st = fetch("https://sirichai1265.github.io/hal-storage-calculator/DASHBOARD.html").then(r => r.text()).then(html => {
+  const st = get("https://sirichai1265.github.io/hal-storage-calculator/DASHBOARD.html").then(html => {
     const doc = new DOMParser().parseFromString(html, "text/html");
     const kpis = doc.querySelectorAll(".kpi strong");
     document.querySelectorAll("[data-s]").forEach(el => {
@@ -315,7 +323,7 @@
   }).catch(() => {});
 
   // ดึงยอด GATE IN / GATE OUT ของวันล่าสุดจาก H-A Gate Move
-  const gm = fetch("https://sirichai1265.github.io/ha-gate-move/dashboard.html").then(r => r.text()).then(html => {
+  const gm = get("https://sirichai1265.github.io/ha-gate-move/dashboard.html").then(html => {
     const d = JSON.parse(html.match(/const DATA = \/\*__DATA__\*\/(\{.*?\});\s*\n/s)[1]);
     const last = d.moves.reduce((m, x) => x[0] > m ? x[0] : m, "");
     const day = d.moves.filter(x => x[0] === last);
@@ -333,5 +341,10 @@
     if (m) stamps.push(`${m[3]}-${m[2]}-${m[1]} ${m[4]}`);
   }).catch(() => {});
 
-  Promise.all([eq, st, gm]).then(showStamp);
+  Promise.all([eq, st, gm]).then(showStamp).finally(() => { busy = false; });
+  }
+
+  refresh();
+  setInterval(refresh, 5 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
 </script>
